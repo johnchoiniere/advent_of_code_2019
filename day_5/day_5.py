@@ -83,7 +83,17 @@ def opcode_d5(input_val, l):
             if a_val != 0:
                 if b_mode == 0:
                     pointer = l[l[pointer+2]]
-                r
+                elif b_more == 1:
+                    pointer = l[pointer+2]
+                else:
+                    print("INST 05 ERROR INVALID MODE")
+                    break
+            else:
+                 pointer += 1   
+                
+        elif operation == '06':
+            if a_mode == 0:
+                a_val = l[l[pointer+1]]
                 
             
     return ret
