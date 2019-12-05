@@ -74,5 +74,16 @@ def opcode_d5(input_val, l):
         elif operation == '04':
             ret = l[l[pointer+1]]
             pointer += 2
+
+        elif operation == '05':
+            if a_mode == 0:
+                a_val = l[l[pointer+1]]
+            elif a_mode == 1:
+                a_val = l[pointer+1]
+            if a_val != 0:
+                if b_mode == 0:
+                    pointer = l[l[pointer+2]]
+                r
+                
             
     return ret
