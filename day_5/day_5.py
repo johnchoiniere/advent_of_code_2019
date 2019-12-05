@@ -9,27 +9,18 @@ Created on Mon Dec  2 11:06:47 2019
 with open('input.txt') as f:
     infile = f.readlines()[0].strip().split(',')
 
-'''
-Retrospectively I made it a function rather than loose code. That should make it more reusable, too.
+# def val_assigner(l):
+    
 
-intcode_d2 is a function with the following four arguments:
-    cl -- a list of command locations for the loop to look at
-    n  -- a "noun", in the parlance of the game; will be placed in input list position 1
-    v  -- a "verb", in the parlance of the game; will be placed in input list position 2
-    l  -- the complete input list
-'''
 def opcode_d5(input_val, l):
     l = [int(x) for x in l]
     end = False
     pointer = 0
     while not end:
-        #time.sleep(0.3333333)
         instruct = str(l[pointer]).rjust(5,'0')
         operation = instruct[len(instruct)-2:]
         a_mode = int(instruct[2])
         b_mode = int(instruct[1])
-        
-        #print("Pointer: "+str(pointer)+" --- Op code: "+operation)
         
         if operation == '99':
             end = True
