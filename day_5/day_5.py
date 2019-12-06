@@ -7,93 +7,97 @@ Created on Mon Dec  2 11:06:47 2019
 
 # read in the data; I'm... not great at doing I/O in python, tbh
 with open('input.txt') as f:
-    infile = f.readlines()
+    infile = f.readlines()[0].strip().split(',')
 
-'''
-Retrospectively I made it a function rather than loose code. That should make it more reusable, too.
-
-intcode_d2 is a function with the following four arguments:
-    cl -- a list of command locations for the loop to look at
-    n  -- a "noun", in the parlance of the game; will be placed in input list position 1
-    v  -- a "verb", in the parlance of the game; will be placed in input list position 2
-    l  -- the complete input list
-'''
+# A function to return the 'diagnostic code' based on
+# a provided input value and a list that is the 'opcode program'.
 def opcode_d5(input_val, l):
-    l = [int(x) for x in l]
-    end = False
-    pointer = 0
+    l = [int(x) for x in l]     # Convert list values to ints
+    end = False                 # set up a condition for the while
+    pointer = 0                 # initialize the pointer to the first position
+    
+    # Enter the while loop. Continues as long as end is false,
+    # and hitting operation 99 sets end to true.
     while not end:
         instruct = str(l[pointer]).rjust(5,'0')
         operation = instruct[len(instruct)-2:]
-        a_mode = int(instruct[2])
-        b_mode = int(instruct[1])
         
+        # Do a little error-handling: break if the mode parameter is invalid for a or b
+        if(int(instruct[2])>1):
+            print("A_MODE INVALID\nPointer: "+str(pointer)+", Instruction: "+instruct+"\n")
+            break
+        
+        if(int(instruct[1])>1):
+            print("B_MODE INVALID\nPointer: "+str(pointer)+", Instruction: "+instruct+"\n")
+            break
+        
+        # Safe because error-handling above means instruct[1] and [2] _must_ be 0 or 1.
+        # This absolutely will assign values that are outside of the scope of the command
+        # but since they won't be used who cares.
+        if operation in ('01','02','05','06','07','08'):
+            a_val = l[l[pointer+1]] if instruct[2]=='0' else l[pointer+1]
+        if operation in ('01','02','05','06','07','08'):
+            b_val = l[l[pointer+2]] if instruct[1]=='0' else l[pointer+2]
+        
+        # Run through the possible operations. 99: end.
         if operation == '99':
             end = True
         
+        # 01: add and place
         elif operation == '01':
-            if a_mode == 0:
-                a_val = l[l[pointer+1]]
-            elif a_mode == 1:
-                a_val = l[pointer+1]
-            else:
-                print("ERROR IN ASSIGNING A_VAL")
-                break
-            if b_mode == 0:
-                b_val = l[l[pointer+2]]
-            elif b_mode == 1:
-                b_val = l[pointer+2]
-            else:
-                print("ERROR IN ASSIGNING B_VAL")
-                break
             l[l[pointer+3]] = a_val + b_val
             pointer += 4
         
+        # 02: multiply and place
         elif operation == '02':
-            if a_mode == 0:
-                a_val = l[l[pointer+1]]
-            elif a_mode == 1:
-                a_val = l[pointer+1]
-            else:
-                print("ERROR IN ASSIGNING A_VAL")
-                break
-            if b_mode == 0:
-                b_val = l[l[pointer+2]]
-            elif b_mode == 1:
-                b_val = l[pointer+2]
-            else:
-                print("ERROR IN ASSIGNING B_VAL")
-                break
             l[l[pointer+3]] = a_val * b_val
             pointer += 4
         
+        # 03: input
         elif operation == '03':
             l[l[pointer+1]] = input_val
             pointer += 2
-            
+        
+        # 04: return
         elif operation == '04':
             ret = l[l[pointer+1]]
             pointer += 2
 
+        # 05: jump-if-true
         elif operation == '05':
-            if a_mode == 0:
-                a_val = l[l[pointer+1]]
-            elif a_mode == 1:
-                a_val = l[pointer+1]
             if a_val != 0:
-                if b_mode == 0:
-                    pointer = l[l[pointer+2]]
-                elif b_more == 1:
-                    pointer = l[pointer+2]
-                else:
-                    print("INST 05 ERROR INVALID MODE")
-                    break
+                pointer = b_val
             else:
-                 pointer += 1   
-                
+                 pointer += 3
+        
+        # 06: jump-if-false
         elif operation == '06':
-            if a_mode == 0:
-                a_val = l[l[pointer+1]]
-                
+            if a_val == 0:
+                pointer = b_val
+            else:
+                pointer += 3
+
+        # 07: less-than flag
+        elif operation == '07':
+            if a_val < b_val:
+                l[l[pointer+3]] = 1
+            else:
+                l[l[pointer+3]] = 0
+            pointer += 4
+        
+        # 08: equals flag
+        elif operation == '08':
+            if a_val == b_val:
+                l[l[pointer+3]] = 1
+            else:
+                l[l[pointer+3]] = 0
+            pointer += 4
             
     return ret
+
+# Execute my specific stuff.
+p1 = opcode_d5(1, infile)
+p2 = opcode_d5(5, infile)
+
+print("Part 1 answer: "+str(p1))
+print("Part 2 answer: "+str(p2))
